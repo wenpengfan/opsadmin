@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("appconf");
+        box.className="active";
+        var box2 = document.getElementById("database");
+        box2.className="active";
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="database_form">
+            {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                    <div class="btn btn-group" style="padding-left: 0">
+						 <a id="databaseadd" style="display: block; float:left; margin: auto;" class="btn btn-success" href="{% url 'database_add' %}">添加数据库</a>
+                    </div>
+                    <div id="export"></div>
+                </div>
+                <div class="box-body">
+                    <table class="table table-striped table-bordered" id="databaseform">
+                        <thead>
+                          <tr>
+                              <th>
+                                  <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable='false' onclick="check_all('database_form')">
+                              </th>
+                              <th>数据库名称</th>
+                              <th>数据库描述</th>
+                              <th>所属产品线</th>
+                              <th>运维负责人</th>
+                              <th>操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for database in all_database %}
+                              <tr class="even gradeX">
+                                  <td><input type="checkbox" id="u_id" class="i-checks" value="{{ database.id }}" name="g_check"/></td>
+                                  <td>{{ database.name }}</td>
+                                  <td>{{ database.description }}</td>
+                                  <td>{{ database.product }}</td>
+                                  <td>{{ database.ops.name }}</td>
+                                  <td>
+                                      <a id="databaseedit" style="display: block; float:left; margin: auto;" href="{% url "database_edit" database.id %}"><span class="btn btn-sm btn-info">编辑</span></a>
+                                      <a id="databasedel" style="display: block; float:left; margin: auto;" href="{% url "database_del"%}?id={{ database.id }}" onclick="return checkSubmit()"><span class="btn btn-sm btn-danger">删除</span></a>
+                                  </td>
+                              </tr>
+                          {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="btn-group">
+                        <input type="button" id="database_del" class="btn btn-danger" name="delbutton" value="删除数据库"/>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    $(function () {
+      $('#databaseform').DataTable({
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "bAutoWidth": false,
+        "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 5]}],
+        "aaSorting": [[1, "asc"]]
+      });
+    });
+</script>
+<script>
+    $('#database_del').click(function () {
+        var database_id_all = getIDall();
+        if (database_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {database_id_all: database_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'database_del' %}",
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+    function checkSubmit() {
+        if (!confirm("确定删除？")) {
+            window.event.returnValue = false;
+        }
+    }
+</script>
+{% endblock %}

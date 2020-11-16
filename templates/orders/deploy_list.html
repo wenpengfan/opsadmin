@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("orders");
+        box.className="active";
+        var box2 = document.getElementById("deploy");
+        box2.className="active";
+        }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="deploy_form">
+            {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                    <div class="btn btn-group" style="padding-left: 0">
+                        <a id="deployadd" style="display: block;" href="{% url 'deploy_add' %}"><li class="btn btn-success" >添加工单</li></a>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label for="page_len">
+                        <select name="page_len" id="page_len" class="form-control m-b input-sm" onchange="change_info()">
+                            {% ifequal page_len '10' %}
+                                <option value="10" selected>10</option>
+                            {% else %}
+                                <option value="10">10</option>
+                            {% endifequal %}
+                            {% ifequal page_len '20' %}
+                                <option value="20" selected>20</option>
+                            {% else %}
+                                <option value="20">20</option>
+                            {% endifequal %}
+                            {% ifequal page_len '50' %}
+                                <option value="50" selected>50</option>
+                            {% else %}
+                                <option value="50">50</option>
+                            {% endifequal %}
+                            {% ifequal page_len '100' %}
+                                <option value="100" selected>100</option>
+                            {% else %}
+                                <option value="100">100</option>
+                            {% endifequal %}
+                            {% ifequal page_len '200' %}
+                                <option value="200" selected>200</option>
+                            {% else %}
+                                <option value="200">200</option>
+                            {% endifequal %}
+                        </select>
+                    </label>
+                    <label>
+                        <select name="deploy_status" id="deploy_status" class="form-control m-b input-sm" onchange="change_info()">
+                            {% ifequal deploy_status '0' %}
+                                <option value="0" selected>未完成</option>
+                            {% else %}
+                                <option value="0">未完成</option>
+                            {% endifequal %}
+                            {% ifequal deploy_status '1' %}
+                                <option value="1" selected>已完成</option>
+                            {% else %}
+                                <option value="1">已完成</option>
+                            {% endifequal %}
+                            {% ifequal deploy_status '-1' %}
+                                <option value="-1" selected>全部</option>
+                            {% else %}
+                                <option value="-1">全部</option>
+                            {% endifequal %}
+                        </select>
+                    </label>
+                </div>
+                <div class="input-group inline-group col-md-3">
+                        <input type="text" class="form-control" id="search_input" name="keyword" value="{{ keyword }}" placeholder="请输入应用名称、申请人">
+                        <input type="text" name="block_bootstrap_enter" style="display: none;"/>
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-primary" onclick="change_info()">
+                                &nbsp;搜索&nbsp;
+                            </button>
+                        </div>
+                </div>
+                <div class="box-body">
+                    <table class="table table-striped table-bordered" id="deployform">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable="false" onclick="check_all('deploy_form')">
+                                </th>
+                                <th>编号</th>
+                                <th>应用名称</th>
+                                <th>程序版本号</th>
+                                <th>配置版本号</th>
+                                <th>工单创建时间</th>
+                                <th>申请人</th>
+                                <th>预约操作时间</th>
+                                <th>完成时间</th>
+                                <th>测试情况</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for deploy in deploys.object_list %}
+                                <tr class="even gradeX">
+                                    <td><input type="checkbox" id="id" class="i-checks" value="{{ deploy.id }}" name="id" /></td>
+                                    <td>{{ deploy.id }}</td>
+                                    <td><a href="#"><li style="list-style-type:none" onclick="return popWin(this.value)" value="{{ deploy.id }}">{{ deploy.app_name }}</li></a></td>
+                                    <td>
+                                    	<div id="version_{{ deploy.id }}">{{ deploy.version }}</div>
+                                    </td>
+                                    <td>
+                                    	<div id="version_{{ deploy.id }}">{{ deploy.conf_version }}</div>
+                                    </td>
+                                    <td>{{ deploy.create_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ deploy.order_user }}</td>
+                                    <td>{{ deploy.operating_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                            <span>{{ deploy.completion_time|date:"Y-m-d H:i:s" }}</span>
+                                    </td>
+                                    <td>
+                                    	{% if deploy.is_tested == 1 %}
+                                    		<span class="badge bg-green" id="teststatus_{{ deploy.id }}">测试通过</span>
+                                    	{% elif deploy.is_tested == 2 %}
+                                    		<span class="badge bg-red" id="teststatus_{{ deploy.id }}">测试未通过</span>
+                                    	{% else %}
+                                    		<span class="badge bg-gray" id="teststatus_{{ deploy.id }}">正在确认</span>
+                                    	{% endif %}
+                                    <td>
+                                        {% if deploy.order_status == True %}
+                                            {% if deploy.is_new == False %}
+                                                {% if deploy.status == False %}
+                                                    <span class="label label-default">未完成</span>
+                                                {% else %}
+                                                    <span class="label label-success">已完成</span>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if deploy.status == False %}
+                                                    <span class="label label-default">未完成</span><span class="label label-warning">新应用</span>
+                                                {% else %}
+                                                    <span class="label label-success">已完成</span><span class="label label-warning">新应用</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="label label-danger">文档缺失</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if deploy.status == False %}
+                                            {% if deploy.order_status == True %}
+                                                <a id="deployfinish" style="display: block; float: left; margin: auto;" href="{% url "deploy_finish" deploy.id %}" class="btn btn-sm btn-warning" value="">完成</a>
+                                            {% else %}
+                                                <a id="deployfinished" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default" >完成</a>
+                                            {% endif %}
+                                            <a id="deployedit" style="display: block; float: left; margin: auto;" href="{% url "deploy_edit" deploy.id %}" class="btn btn-sm btn-info">编辑</a>
+                                            <a id="deploydel" style="display: block; float: left; margin: auto;" href="{% url "deploy_del" %}?id={{ deploy.id }}" onclick="return checkSubmit()" class="btn btn-sm btn-danger">删除</a>
+                                        {% else %}
+                                            <a id="deployfinished" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default" >完成</a>
+                                            <a id="deployedit" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default">编辑</a>
+                                            <a id="deploydel" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default">删除</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        {% include 'paginator.html' %}
+                    </div>
+                    <div class="btn-group">
+                        <input type="button" id="deploy_del" class="btn btn-danger" name="del_button" value="删除工单"/>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    $(function () {
+      $('#deployform').DataTable({
+          "paging": false,
+          "lengthChange": true,
+          "searching": false,
+          "ordering": true,
+          "info": true,
+          "bAutoWidth": false,
+          "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 9, 11]}],
+          "aaSorting": [[8, "desc"], [7, "asc"]]
+      });
+    });
+</script>
+<script>
+    $('#deploy_del').click(function () {
+        var deploy_id_all = getIDall();
+        if (deploy_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {deploy_id_all: deploy_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'deploy_del' %}",
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+    function change_info(){
+        var args = $("#deploy_form").serialize();
+        var status_args = $("#deploy_status").val();
+        window.location = "{% url 'deploy_list' %}?deploy_status=" + status_args + "&" + args;
+    }
+</script>
+<script>
+    function checkSubmit() {
+        if (!confirm("确定删除？")) {
+            window.event.returnValue = false;
+        }
+    }
+</script>
+<script>
+    function popWin(deploy_id){
+      layer.open({
+          type: 2,
+          title: '更新详情',
+          area: ['700px', '500px'],
+          shadeClose: true, //点击遮罩关闭
+          content: ['/orders/deploydetail/' + deploy_id]
+      });
+    }
+</script>
+<script>
+    $("#search_input").keydown(function(e) {
+        if (e.keyCode == 13) {
+            change_info()
+        }
+    });
+</script>
+<script>
+	var testStatus = window.setInterval("updateStatus()",1000);
+	function updateStatus() {
+		var spans = document.getElementsByTagName("span");
+		var arr = new Array();
+		for (var i=0;i<spans.length;i++) {
+			if (/^teststatus_\d*$/.test(spans[i].id) && $('#'+spans[i].id).hasClass("bg-gray")) {
+				var deploy_id = spans[i].id.split("_")[1];
+				arr.push(deploy_id);
+			}
+		}
+		var deploy_id_all = arr.join(","); 
+		if (deploy_id_all != "") {
+			$.ajax({
+				type: "post",
+					data: {deploy_id_all: deploy_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+        	    	url: "{% url 'deploy_test_status' %}",
+        	     	success: function (result) {
+        	      		var resultJson = JSON.parse(result); 
+        	      		for (var key in resultJson) {
+        	      			if (resultJson[key] == 1) {
+        	      				var version = $('#version_'+key).text().trim();
+								$('#version_'+key).text(version+'.Release');
+								$('#teststatus_'+key).text('测试通过');
+								$('#teststatus_'+key).removeClass('bg-gray').addClass('bg-green');
+        	      			} else if (resultJson[key] == 2) {
+								$('#teststatus_'+key).text('测试未通过');
+								$('#teststatus_'+key).removeClass('bg-gray').addClass('bg-red');
+        	      			}
+        	      		}
+        	    	}
+			})
+		}
+	}
+</script>
+{% endblock %}

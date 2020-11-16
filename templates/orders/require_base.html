@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/jquery.bootstrap-duallistbox.js"></script>
+    <script src="/static/js/jquery.cxcalendar.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-duallistbox.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.cxcalendar.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("orders");
+        box.className="active";
+        var box2 = document.getElementById("require");
+        box2.className="active";
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+            </div>
+            <div class="box-body">
+                {% if require_id %}
+                    <form enctype="multipart/form-data" action="{% url 'require_edit' require_id %}" method="post">
+                {% else %}
+                    <form enctype="multipart/form-data" action="{% url 'require_add' %}" method="post">
+                {% endif %}
+                {% csrf_token %}
+                {{ form.as_p }}
+                <a href="{% url 'require_list' %}"><li style="width: 60pt" class="btn btn-primary" value="">返回</li></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="submit" style="width: 60pt" class="btn btn-primary" value="">提交</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    $('#id_operating_time').cxCalendar({
+    	date: new Date().getTime()+14*24*60*60*1000,
+        type: 'datetime',
+        format: 'YYYY-MM-DD HH:mm:ss'
+    });
+</script>
+{% endblock %}

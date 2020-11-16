@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="/static/js/clipboard.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("navi");
+        box.className="active";
+        var box2 = document.getElementById("hosts");
+        box2.className="active";
+    }
+</script>
+
+<body>
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <section class="content">
+        <label>
+            <select name="hosts_order" id="hosts_order" class="form-control m-b input-default" onchange="change_hosts()">
+                {% ifequal hosts_order 'ip' %}
+                    <option value="ip" selected>ip</option>
+                {% else %}
+                    <option value="ip">ip</option>
+                {% endifequal %}
+                {% ifequal hosts_order 'url' %}
+                    <option value="url" selected>url</option>
+                {% else %}
+                    <option value="url">url</option>
+                {% endifequal %}
+             </select>
+        </label>
+        <label>
+            <button id="copyBtn" class="btn btn-info" data-clipboard-target="#all_hosts">复制</button>
+        </label>
+        <div class="box">
+            <div id="all_hosts" class="box-body">
+                {% for hosts in all_hosts %}
+                    {{ hosts.ip }} {{ hosts.url }}<br>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    function change_hosts() {
+        var hosts_order = $("#hosts_order").val();
+        window.location = "{% url 'hosts_list' %}?hosts_order=" + hosts_order
+    }
+    new ClipboardJS('#copyBtn', {
+        container: document.getElementById('all_hosts')
+    });
+</script>
+</body>
+{% endblock %}

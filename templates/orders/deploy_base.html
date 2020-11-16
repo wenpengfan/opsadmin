@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/jquery.bootstrap-duallistbox.js"></script>
+    <script src="/static/js/jquery.cxcalendar.js"></script>
+    <script src="/static/js/bootstrap-select.js"></script>
+    <script src="/static/plugins/toastr/toastr.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-duallistbox.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.cxcalendar.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-select.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.center.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    toastr.options = {
+        positionClass: "toast-center-center"
+    }
+</script>
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("orders");
+        box.className="active";
+        var box2 = document.getElementById("deploy");
+        box2.className="active";
+        {% if status == 2 %}
+            toastr.warning("版本号已存在！");
+        {% elif status == 3 %}
+            toastr.warning("当前应用还有未完成的工单，请完成后再提交！");
+        {% elif status == 4 %}
+            toastr.warning("版本号不允许以Test或Release结尾！");
+        {% endif %}
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+            </div>
+            <div class="box-body">
+                {% if deploy_id %}
+                    <form action="{% url 'deploy_edit' deploy_id %}" method="post">
+                {% else %}
+                    <form action="{% url 'deploy_add' %}" method="post">
+                {% endif %}
+                {% csrf_token %}
+                {% for item in form %}
+                    {% if item.name != "app_name" and item.name != "dbscript" %}
+                        <p>
+                            <label>{{ item.label }}:</label>
+                            {{ item }}
+                        </p>
+                    {% elif item.name == "app_name" %}
+                        <table style="margin-bottom: 10px;">
+                            <tr>
+                                <th style="padding-bottom: 5px;">应用名称:</th>
+                            </tr>
+                            <tr>
+                                <td>{{ item }}</td>
+                                <td><a href="#" id="projectaddmini" style="margin-left: 10px;width: 60pt" class="btn btn-success" onclick="return popWin()" value="">新增应用</a></td>
+                            </tr>
+                    <tr>
+                        <th style="padding-bottom: 5px;">需部署IDC:</th>
+                    </tr>
+                    <tr>
+                        <td>
+                        <ul id="id_idc">
+                            <li><label for="id_idc_0">
+                                <input type="checkbox" name="checkbox_idc" value="nj" id="id_idc_0" /> 凤凰云机房</label></li>
+                            <li><label for="id_idc_1">
+                                <input type="checkbox" name="checkbox_idc" value="hz" id="id_idc_1" /> 富春云机房</label></li>
+                            <li><label for="id_idc_2">
+                                <input type="checkbox" name="checkbox_idc" value="wz" id="id_idc_2" /> 温大机房</label></li>
+                        </ul>
+                        </td> 
+                    </tr>
+
+
+
+                    </table>
+                    {% elif item.name == "dbscript" %}
+                        {{ item }}
+                    {% endif %}
+                {% endfor %}
+                <table style="margin-bottom: 10px;">
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="needdb" class="i-checks" data-editable="false" onclick="return upLoad()">
+                        </td>
+                        <td>
+                            <label for="needdb" style="padding-left: 5px;">需要生产环境数据库更新</label>
+                        </td>
+                        <td id="upload" hidden="hidden">
+                            <a href="#" id="uploadscript" style="margin-left: 10px;width: 60pt" class="btn btn-success" onclick="dbUpdate()" value="">上传脚本</a>
+                        </td>
+                    </tr>
+                </table>
+
+                <a href="{% url 'deploy_list' %}"><li style="width: 60pt" class="btn btn-info" value="">返回</li></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="submit" style="width: 60pt;" class="btn btn-warning deploy-btn" value="">下一步</button>
+                </form>
+            </div>
+            <div class="box-footer">
+              <i class="fa fa-info-circle"></i> 更新时间：每周二、四（9：30-17：00） 
+            </div>
+        </div>
+    </section>
+    {# 用于接收project_add_mini.html中layui子层的传值 #}
+    <input id="project_status" value="" hidden="hidden">
+    <input id="new_app_name_id" value="" hidden="hidden">
+    <input id="new_app_name" value="" hidden="hidden">
+    {# 用于接收dbscript_add_mini.html中layui子层的传值 #}
+    <input id="dbscript_status" value="" hidden="hidden">
+    <input id="new_dbscript_id" value="" hidden="hidden">
+</div>
+
+<script>
+    function upLoad(){
+        var confirmBox = document.getElementById("needdb");
+        var uploadBtn = document.getElementById("upload"); 
+        if (confirmBox.checked) {
+            uploadBtn.removeAttribute("hidden");
+        } else {
+            uploadBtn.hidden = "hidden";
+        }
+    }
+</script>
+<script>
+    $("#id_dbscript").on("dbscript_id_change",function() {
+        $(".deploy-btn").removeAttr("disabled");
+    });
+</script>
+<script>
+    function dbUpdate() {
+    layer.open({
+          type: 2,
+          title: '数据库更新',
+          area: ['700px', '500px'],
+          shadeClose: true, //点击遮罩关闭
+          content: ['/orders/dbscriptaddmini/'],
+          end: function(){
+            var dbscript_status = $("#dbscript_status").val();
+            $(".deploy-btn").attr("disabled","disabled");
+            if (dbscript_status == '1') {
+                layer.msg('上传成功！',{
+                    icon: 1,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    var new_dbscript_id = $("#new_dbscript_id").val();
+                    $("#id_dbscript").attr("value",new_dbscript_id);
+                    $("#id_dbscript").trigger("dbscript_id_change")
+                });
+            } else if (dbscript_status == '2') {
+                layer.msg('上传失败！',{
+                    icon: 2,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    parent.location.reload();
+                });
+            }
+        }
+      });
+    }
+</script>
+<script>
+    function popWin(){
+      layer.open({
+          type: 2,
+          title: '添加应用',
+          area: ['700px', '500px'],
+          shadeClose: true, //点击遮罩关闭
+          content: ['/appconf/projectaddmini/'],
+          end: function(){
+            var project_status = $("#project_status").val();
+            if (project_status == '1') {
+                layer.msg('添加成功！',{
+                    icon: 1,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    var new_app_name_id = $("#new_app_name_id").val();
+                    var new_app_name = $("#new_app_name").val();
+                    $('#id_app_name').append("<option value="+new_app_name_id+" selected>"+new_app_name+"</option>");
+                    $('#id_app_name').selectpicker('refresh');
+                });
+            } else if (project_status == '2') {
+                layer.msg('添加失败！',{
+                    icon: 2,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    parent.location.reload();
+                });
+            }
+        }
+      });
+    }
+</script>
+<script>
+    $('#id_operating_time').cxCalendar({
+    	date: new Date().getTime()+14*24*60*60*1000,
+        type: 'datetime',
+        format: 'YYYY-MM-DD HH:mm:ss'
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+	<script src="/static/plugins/toastr/toastr.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.center.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    toastr.options = {
+        positionClass: "toast-center-center"
+    }
+</script>
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("tests");
+        box.className="active";
+        var box2 = document.getElementById("versync");
+        box2.className="active";
+		{% if status == 2 %}
+            toastr.warning("任务正在执行，无法删除！");
+        {% elif status == 3 %}
+            toastr.warning("删除失败！");
+		{% endif %}        
+	}
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+		<form action="" method="post" id="versync_form">
+            {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                </div>
+				<div class="col-md-5">
+                    <label for="page_len">
+						<select name="page_len" id="page_len" class="form-control m-b input-sm" onchange="change_info()">
+                            {% ifequal page_len '10' %}
+                                <option value="10" selected>10</option>
+                            {% else %}
+                                <option value="10">10</option>
+                            {% endifequal %}
+                            {% ifequal page_len '20' %}
+                                <option value="20" selected>20</option>
+                            {% else %}
+                                <option value="20">20</option>
+                            {% endifequal %}
+                            {% ifequal page_len '50' %}
+                                <option value="50" selected>50</option>
+                            {% else %}
+                                <option value="50">50</option>
+                            {% endifequal %}
+                            {% ifequal page_len '100' %}
+                                <option value="100" selected>100</option>
+                            {% else %}
+                                <option value="100">100</option>
+                            {% endifequal %}
+                            {% ifequal page_len '200' %}
+                                <option value="200" selected>200</option>
+                            {% else %}
+                                <option value="200">200</option>
+                            {% endifequal %}
+                        </select>
+                    </label>
+            		<label>
+                    	<select name="product_id" id="product_select" class="form-control m-b input-sm" onchange="change_info()">
+                    		{% ifequal product_id 0 %}
+								<option value="0" selected>---------</option>
+							{% else %}
+								<option value="0">---------</option>
+							{% endifequal %}
+                    		{% for product in all_product %}
+                    			{% ifequal product_id product.id %}
+                    				<option value="{{ product.id }}" selected>{{ product.name }}</option>
+                    			{% else %}
+                    				<option value="{{ product.id }}">{{ product.name }}</option>
+                    			{% endifequal %}
+                    		{% endfor %}
+                    	</select>
+                    </label>
+                    <div class="btn btn-group" style="padding-left: 0">
+						<input type="button" id="version_sync" class="btn btn-success" name="version_sync" value="版本同步"/>
+                    </div>
+                </div>
+            	<div class="box-body">
+            		<table class="table table-striped table-bordered" id="versyncform">
+						<thead>
+                            <tr>
+                                <th>
+                                    <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable="false" onclick="check_all('versync_form')">
+                                </th>
+                                <th>产品线</th>
+                                <th>提交时间</th>
+                                <th>启动时间</th>
+                                <th>结束时间</th>
+                                <th>进度</th>
+                                <th>状态</th>
+                                <th>操作</th>
+							</tr>
+                        </thead>
+                        <tbody>
+            				{% for versync in versyncs.object_list %}
+            					<tr class="even gradeX">
+                            		<td><input type="checkbox" id="id" class="i-checks" value="{{ versync.id }}" name="id" /></td>
+                            		<td>{{ versync.product }}</td>
+                            		<td>{{ versync.submittime|date:"Y-m-d H:i:s" }}</td>
+                            		<td id="starttime_{{ versync.id }}">{{ versync.starttime|date:"Y-m-d H:i:s" }}</td>
+                            		<td id="endtime_{{ versync.id }}">{{ versync.endtime|date:"Y-m-d H:i:s" }}</td>
+									{% if versync.sync_status == 3 %}
+                            			<td>
+                            				<div class="progress progress-xs" id="progress_{{ versync.id }}">
+                            					<div class="progress-bar progress-bar-green" id="progressbar_{{ versync.id }}" style="width:{{ versync.progress }}%"></div>
+                            				</div>
+                            			</td>
+                            			<td>
+                            				<span class="badge bg-green" id="status_{{ versync.id }}">同步成功：{{ versync.progress}}%</span>
+                            			</td>
+									{% elif versync.sync_status == 4 %}
+                            			<td>
+                            				<div class="progress progress-xs" id="progress_{{ versync.id }}">
+                            					<div class="progress-bar progress-bar-red" id="progressbar_{{ versync.id }}" style="width:{{ versync.progress }}%"></div>
+                            				</div>
+                            			</td>
+										<td>
+                            				<span class="badge bg-red" id="status_{{ versync.id }}">同步失败：{{ versync.progress}}%</span>
+                            			</td>
+									{% else %}	
+                            			<td>
+                            				<div class="progress progress-xs progress-striped active" id="progress_{{ versync.id }}">
+                            					<div class="progress-bar progress-bar-blue" id="progressbar_{{ versync.id }}" style="width:{{ versync.progress }}%"></div>
+                            				</div>
+                            			</td>
+										<td>
+											<span class="badge bg-blue" id="status_{{ versync.id }}">同步中：{{ versync.progress }}%</span>
+										</td>
+									{% endif %} 
+                            		<td>
+										<a id="versyncdel" style="display: block; float: left; margin: auto;" href="{% url "versync_del" %}?id={{ versync.id }}&product_id={{ product_id }}&page_len={{ page_len }}" onclick="return checkSubmit()" class="btn btn-sm btn-danger">删除</a>
+									</td>
+                            	</tr>
+							{% endfor %}                         
+					</table>             
+					<div class="row">
+                        {% include 'paginator.html' %}
+                    </div>
+				</div>
+			</div>            
+		</form>
+    </section>
+</div>
+
+<script>
+    $(function () {
+      $('#versyncform').DataTable({
+          "paging": false,
+          "lengthChange": true,
+          "searching": false,
+          "ordering": true,
+          "info": true,
+          "bAutoWidth": false,
+          "bProcessing": true,
+          "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 5, 6, 7]}],
+          "aaSorting": [[2, "desc"]]
+      });
+    });
+</script>
+<script>
+    function change_info(){
+        var args = $("#versync_form").serialize();
+        window.location = "{% url 'versync_list' %}?" + args;
+    }
+</script>
+<script>
+    function checkSubmit() {
+        if (!confirm("确定删除？")) {
+            window.event.returnValue = false;
+        }
+    }
+</script>
+<script>
+    $('#version_sync').click(function () {
+        var select = document.getElementById("product_select"); 
+        var index = select.selectedIndex;
+        var prod_id = select.options[index].value;
+        var prod_text = select.options[index].text;
+        if (prod_id != 0) {
+        	if (confirm("确定同步产品线："+prod_text+"？")) {
+				$.ajax({
+        	    	type: "post",
+        	        data: {product_id: prod_id,csrfmiddlewaretoken: '{{ csrf_token }}'},
+        	        url: "{% url 'version_sync' %}",
+        	        success: function (status) {
+        	        	if (status == 1) {
+            				toastr.warning("同步任务提交成功");
+							setTimeout(function() {
+                				location.reload();
+                			},1000)
+                		} else if (status == 2) { 
+            				toastr.warning("同步任务提交失败");
+        	        	} else if (status == 3) { 
+            				toastr.warning("该产品线有测试需求还未反馈");
+            			}
+        	        }
+        	    })
+			} else {
+        	    window.event.returnValue = false;
+        	}
+        }
+    })
+</script>
+<script>
+	var prog = window.setInterval("updateProgress()",1000);
+	function updateProgress() {
+		var divs = document.getElementsByTagName("div");
+		var arr = new Array(); 
+		for (var i=0;i<divs.length;i++) {
+			if (/^progress_\d*$/.test(divs[i].id) && $('#'+divs[i].id).hasClass("progress-striped")) {
+				var versync_id = divs[i].id.split("_")[1];
+				arr.push(versync_id);
+			}
+		}
+		var versync_id_all = arr.join(",");
+		if (versync_id_all != "") {
+			$.ajax({
+				type: "post",
+					data: {versync_id_all: versync_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+        	    	url: "{% url 'versync_progress' %}",
+        	     	success: function (result) {
+        	      		var resultJson = JSON.parse(result); 
+        	      		for (var key in resultJson) {
+        	      			if (resultJson[key].split(";")[1] == 3) {
+								$('#progress_'+key).removeClass('progress-striped');
+								$('#progressbar_'+key).removeClass('progress-bar-blue').addClass('progress-bar-green');
+        	      				$('#progressbar_'+key).css('width', resultJson[key].split(";")[0]+'%');
+								$('#status_'+key).removeClass('bg-blue').addClass('bg-green');
+								$('#status_'+key).text('同步成功：'+resultJson[key].split(";")[0]+'%');
+								$('#starttime_'+key).text(resultJson[key].split(";")[2]);
+								$('#endtime_'+key).text(resultJson[key].split(";")[3]);
+        	      			} else if (resultJson[key].split(";")[1] == 4) {
+								$('#progress_'+key).removeClass('progress-striped');
+								$('#progressbar_'+key).removeClass('progress-bar-blue').addClass('progress-bar-red');
+        	      				$('#progressbar_'+key).css('width', resultJson[key].split(";")[0]+'%');
+								$('#status_'+key).removeClass('bg-blue').addClass('bg-red');
+								$('#status_'+key).text('同步失败：'+resultJson[key].split(";")[0]+'%');
+								$('#starttime_'+key).text(resultJson[key].split(";")[2]);
+								$('#endtime_'+key).text(resultJson[key].split(";")[3]);
+        	      			} else {
+        	      				$('#progressbar_'+key).css('width', resultJson[key].split(";")[0]+'%');
+								$('#status_'+key).text('同步中：'+resultJson[key].split(";")[0]+'%');
+								$('#starttime_'+key).text(resultJson[key].split(";")[2]);
+								$('#endtime_'+key).text(resultJson[key].split(";")[3]);
+							}
+        	      		}
+        	    	}
+			})
+		}
+	}
+</script>
+{% endblock %}

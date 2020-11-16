@@ -1,0 +1,148 @@
+<script>
+    $(document).ready(function(){
+    $('.loading').fadeOut();
+    {% if request.user.is_superuser %}
+      $("li").each(function(){
+        if($(this).attr('id')){
+            $(this).css('display','block');
+        }
+      });
+      $("a").each(function(){
+        if($(this).attr('id')){
+            $(this).css('display','block');
+        }
+      });
+      $("button").each(function(){
+        if($(this).attr('id')){
+            $(this).css('display','block');
+        }
+      });
+    {% else %}
+        $.get('/accounts/permission/user_permission/',function(data){
+            if (data) {
+                var obj = data.split(",");
+                var x;
+                for (x in obj) {
+                  $("a").each(function(){
+                    if($(this).attr('id') == obj[x]){
+                        $(this).css('display','block');
+                    }
+                  });
+                  $("li").each(function(){
+                    if($(this).attr('id') == obj[x]){
+                        $(this).css('display','block');
+                    }
+                  });
+                  $("button").each(function(){
+                    if($(this).attr('id') == obj[x]){
+                        $(this).css('display','block');
+                    }
+                  });
+                }
+            }
+        });
+    {% endif %}
+});
+</script>
+<aside class="main-sidebar">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+    <div style="height: 50px">
+    </div>
+      <!-- Sidebar user panel (optional) -->
+      <!-- /.search form -->
+      <!-- Sidebar Menu -->
+      <ul class="sidebar-menu" id="sidebar-menu">
+        <li class="treeview" id="navi" style="display: none">
+          <a href="#"><i class="fa fa-link"></i> <span>站点导航</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="prolist" style="display: none"><a href="{% url 'pro_index' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;生产环境</span></a></li>
+            <li id="devlist" style="display: none"><a href="{% url 'dev_index' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;开发环境</span></a></li>
+            <li id="testlist" style="display: none"><a href="{% url 'test_index' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;测试环境</span></a></li>
+            <li id="hosts" style="display: none"><a href="{% url 'hosts_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;Hosts列表</span></a></li>
+            <li id="site" style="display: none"><a href="{% url 'manage_site' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;站点管理</span></a></li>
+          </ul>
+        </li>
+        <li class="treeview" id="cmdb" style="display: none">
+          <a href="#"><i class="fa fa-database"></i> <span>资产管理</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="asset" style="display: none"><a href="{% url 'asset_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;主机信息</span></a></li>
+             <li id="asset" style="display: none"><a href="{% url 'idc' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;机房信息</span></a></li>
+          </ul>
+        </li>
+        <li class="treeview" id="appconf" style="display: none">
+          <a href="#"><i class="fa fa-outdent"></i> <span>项目管理</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="product" style="display: none"><a href="{% url 'product_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;产品线管理</span></a></li>
+            <li id="project" style="display: none"><a href="{% url 'project_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;应用管理</span></a></li>
+            <li id="database" style="display: none"><a href="{% url 'database_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;数据库管理</span></a></li>
+            <li id="appowner" style="display: none"><a href="{% url 'appowner_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;人员管理</span></a></li>
+          </ul>
+        </li>
+        <li class="treeview" id="orders" style="display: none">
+          <a href="#"><i class="fa fa-retweet"></i> <span>运维工单</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="deploy" style="display: none"><a href="{% url 'deploy_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;应用更新</span></a></li>
+            <li id="dbscript" style="display: none"><a href="{% url 'dbscript_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;数据库更新</span></a></li>
+            <li id="require" style="display: none"><a href="{% url 'require_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;其他需求</span></a></li>
+            <li id="config" style="display: none"><a href="{% url 'config_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;配置更新</span></a></li>
+          </ul>
+        </li>
+        <li class="treeview" id="tests" style="display: none">
+          <a href="#"><i class="fa fa-flask"></i> <span>测试需求</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="apply" style="display: none"><a href="{% url 'apply_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;申请测试</span></a></li>
+            <li id="versync" style="display: none"><a href="{% url 'versync_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;版本同步</span></a></li>
+            <li id="environment" style="display: none"><a href="{% url 'env_prepare' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;环境配置</span></a></li>
+          </ul>
+        </li>
+        <li class="treeview" id="workload" style="display: none">
+          <a href="#"><i class="fa fa-area-chart"></i> <span>工作统计</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="summary" style="display: none"><a href="{% url 'summary_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;汇总分析</span></a></li>
+            <li id="delay" style="display: none"><a href="{% url 'delay_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;延期统计</span></a></li>
+          </ul>
+        </li>
+        <li class="treeview" id="accounts" style="display: none">
+          <a href="#"><i class="fa fa-users"></i> <span>用户管理</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li id="userlist" style="display: none"><a href="{% url 'user_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;用户管理</span></a></li>
+            <li id="rolelist" style="display: none"><a href="{% url 'role_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;角色管理</span></a></li>
+            <li id="permlist" style="display: none"><a href="{% url 'permission_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;权限管理</span></a></li>
+            <li id="delelist" style="display: none"><a href="{% url 'delegate_list' %}"><span>&nbsp;&nbsp;&nbsp;&nbsp;用户委派</span></a></li>
+          </ul>
+        </li>
+        <li id="config" style="display: none"><a href="{% url 'config' %}"><i class="fa fa fa-cog"></i> <span>系统配置</span></a></li>
+      </ul>
+      <!-- /.sidebar-menu -->
+    </section>
+    <!-- /.sidebar -->
+</aside>

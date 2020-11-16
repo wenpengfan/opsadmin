@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("orders");
+        box.className="active";
+        var box2 = document.getElementById("require");
+        box2.className="active";
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="require_form">
+            {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                    <div class="btn btn-group" style="padding-left: 0">
+						 <a id="requireadd" style="display: block;" href="{% url 'require_add' %}"><li class="btn btn-success">添加工单</li></a>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label for="page_len">
+                        <select name="page_len" id="page_len" class="form-control m-b input-sm" onchange="change_info()">
+                            {% ifequal page_len '10' %}
+                                <option value="10" selected>10</option>
+                            {% else %}
+                                <option value="10">10</option>
+                            {% endifequal %}
+                            {% ifequal page_len '20' %}
+                                <option value="20" selected>20</option>
+                            {% else %}
+                                <option value="20">20</option>
+                            {% endifequal %}
+                            {% ifequal page_len '50' %}
+                                <option value="50" selected>50</option>
+                            {% else %}
+                                <option value="50">50</option>
+                            {% endifequal %}
+                            {% ifequal page_len '100' %}
+                                <option value="100" selected>100</option>
+                            {% else %}
+                                <option value="100">100</option>
+                            {% endifequal %}
+                            {% ifequal page_len '200' %}
+                                <option value="200" selected>200</option>
+                            {% else %}
+                                <option value="200">200</option>
+                            {% endifequal %}
+                        </select>
+                    </label>
+                    <label>
+                        <select name="require_status" id="require_status" class="form-control m-b input-sm" onchange="change_info()">
+                            {% ifequal require_status '0' %}
+                                <option value="0" selected>未完成</option>
+                            {% else %}
+                                <option value="0">未完成</option>
+                            {% endifequal %}
+                            {% ifequal require_status '1' %}
+                                <option value="1" selected>已完成</option>
+                            {% else %}
+                                <option value="1">已完成</option>
+                            {% endifequal %}
+                            {% ifequal require_status '-1' %}
+                                <option value="-1" selected>全部</option>
+                            {% else %}
+                                <option value="-1">全部</option>
+                            {% endifequal %}
+                        </select>
+                    </label>
+                </div>
+                <div class="input-group inline-group col-md-3">
+                    <input type="text" class="form-control" id="search_input" name="keyword" value="{{ keyword }}" placeholder="请输入标题、申请人或负责人">
+                    <input type="text" name="block_bootstrap_enter" style="display: none;"/>
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-primary" onclick="change_info()">
+                            &nbsp;搜索&nbsp;
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table class="table table-striped table-bordered" id="requireform">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable="false" onclick="check_all('require_form')">
+                                </th>
+                                <th>编号</th>
+                                <th>需求标题</th>
+                                <th>工单创建时间</th>
+                                <th>申请人</th>
+                                <th>预约操作时间</th>
+                                <th>完成时间</th>
+                                <th>负责人</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for require in requires.object_list %}
+                                <tr class="even gradeX">
+                                    <td><input type="checkbox" id="id" class="i-checks" value="{{ require.id }}" name="id" /></td>
+                                    <td>{{ require.id }}</td>
+                                    <td><a href="#"><li style="list-style-type:none" onclick="return popWin(this.value)" value="{{ require.id }}">{{ require.title }}</li></a></td>
+                                    <td>{{ require.create_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ require.order_user }}</td>
+                                    <td>{{ require.operating_time|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                            <span>{{ require.completion_time|date:"Y-m-d H:i:s" }}</span>
+                                    </td>
+                                    <td>{{ require.owner.username.username }}</td>
+                                    <td>
+                                        {% if require.status == False %}
+                                            <span class="label label-default">未完成</span>
+                                        {% else %}
+                                            <span class="label label-success">已完成</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if require.status == False %}
+                                            <a id="requirefinish" style="display: block; float: left; margin: auto;" href="{% url "require_finish" require.id %}" class="btn btn-sm btn-warning" value="">完成</a>
+                                            <a id="requireedit" style="display: block; float: left; margin: auto;" href="{% url "require_edit" require.id %}" class="btn btn-sm btn-info">编辑</a>
+                                            <a id="requiredel" style="display: block; float: left; margin: auto;" href="{% url "require_del" %}?id={{ require.id }}" onclick="return checkSubmit()" class="btn btn-sm btn-danger">删除</a>
+                                        {% else %}
+                                            <a id="requirefinished" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default">完成</a>
+                                            <a id="requireedit" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default">编辑</a>
+                                            <a id="requiredel" disabled="disabled" style="display: block; float: left; margin: auto;" class="btn btn-sm btn-default">删除</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        {% include 'paginator.html' %}
+                    </div>
+                    <div class="btn-group">
+                        <input type="button" id="require_del" class="btn btn-danger" name="del_button" value="删除工单"/>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    $(function () {
+      $('#requireform').DataTable({
+          "paging": false,
+          "lengthChange": true,
+          "searching": false,
+          "ordering": true,
+          "info": true,
+          "bAutoWidth": false,
+          "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 7, 8]}],
+          "aaSorting": [[6, "desc"],[5, "asc"]]
+      });
+    });
+</script>
+<script>
+    $('#require_del').click(function () {
+        var require_id_all = getIDall();
+        if (require_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {require_id_all: require_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'require_del' %}",
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+    function change_info(){
+        var args = $("#require_form").serialize();
+        var status_args = $("#require_status").val();
+        window.location = "{% url 'require_list' %}?require_status=" + status_args + "&" + args;
+    }
+</script>
+<script>
+    function checkSubmit() {
+        if (!confirm("确定删除？")) {
+            window.event.returnValue = false;
+        }
+    }
+</script>
+<script>
+    function popWin(require_id){
+      layer.open({
+          type: 2,
+          title: '更新详情',
+          area: ['700px', '500px'],
+          shadeClose: true, //点击遮罩关闭
+          content: ['/orders/requiredetail/' + require_id]
+      });
+    }
+</script>
+<script>
+    $("#search_input").keydown(function(e) {
+        if (e.keyCode == 13) {
+            change_info()
+        }
+    });
+</script>
+{% endblock %}

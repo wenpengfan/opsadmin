@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("cmdb");
+        box.className="active";
+        var box2 = document.getElementById("asset");
+        box2.className="active";
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="asset_form">
+            {% csrf_token %}
+            <div class="box">
+                <div class="box-body">
+                    <div class="col-md-5">
+                        <label for="page_len">
+                            <select name="page_len" id="page_len" class="form-control m-b input-sm" onchange="change_info()">
+                                {% ifequal page_len '10' %}
+                                    <option value="10" selected>10</option>
+                                {% else %}
+                                    <option value="10">10</option>
+                                {% endifequal %}
+                                {% ifequal page_len '20' %}
+                                    <option value="20" selected>20</option>
+                                {% else %}
+                                    <option value="20">20</option>
+                                {% endifequal %}
+                                {% ifequal page_len '50' %}
+                                    <option value="50" selected>50</option>
+                                {% else %}
+                                    <option value="50">50</option>
+                                {% endifequal %}
+                                {% ifequal page_len '100' %}
+                                    <option value="100" selected>100</option>
+                                {% else %}
+                                    <option value="100">100</option>
+                                {% endifequal %}
+                                {% ifequal page_len '200' %}
+                                    <option value="200" selected>200</option>
+                                {% else %}
+                                    <option value="200">200</option>
+                                {% endifequal %}
+                            </select>
+                        </label>
+                    </div>
+                    <div class="input-group inline-group col-md-3">
+                        <input type="text" class="form-control" id="search_input" name="keyword" value="{{ keyword }}" placeholder="Search">
+                        <input type="text" name="block_bootstrap_enter" style="display: none;"/>
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-primary" onclick="change_info()">
+                                &nbsp;搜索&nbsp;
+                            </button>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered" id="assetform">
+                        <thead>
+                            <tr>
+                                <th>业务</th>
+                                <th>业务IP</th>
+                                <th>管理卡IP</th>
+                                <th>资产号</th>
+                                <th>序列号</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in assets.object_list %}
+                                <tr class="even gradeX">
+                                    <td>{{ asset.name }}</td>
+                                    <td><a href="#"><li style="list-style-type:none" onclick="return popWin(this)" value="{{ asset.id }}">{{ asset.ip }}</li></a></td>
+                                    <td>{{ asset.public_ip }}</td>
+                                    <td>{{ asset.number }}</td>
+                                    <td>{{ asset.sn }}</td>
+                                    <td>{{ asset.comment }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        {% include 'paginator.html' %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    $(function () {
+      $('#assetform').DataTable({
+          "paging": false,
+          "lengthChange": true,
+          "searching": false,
+          "ordering": true,
+          "info": true,
+          "bAutoWidth": false
+      });
+    });
+</script>
+<script>
+    function change_info(){
+        var args = $("#asset_form").serialize();
+        window.location = "{% url 'asset_list' %}?" + args;
+    }
+</script>
+<script>
+    function popWin(id){
+      var asset_id = id.getAttribute('value')
+      layer.open({
+          type: 2,
+          title: '资产详情',
+          area: ['700px', '500px'],
+          shadeClose: true, //点击遮罩关闭
+          content: ['/cmdb/assetdetail/' + asset_id]
+      });
+    }
+</script>
+<script>
+    $("#search_input").keydown(function(e) {
+        if (e.keyCode == 13) {
+            change_info()
+        }
+    });
+</script>
+{% endblock %}
