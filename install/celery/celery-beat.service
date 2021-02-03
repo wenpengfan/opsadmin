@@ -1,0 +1,14 @@
+[Unit]
+Description=Celery Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/app/opsadmin
+ExecStart=/usr/bin/bash /opt/app/opsadmin/bin/start_celery-beat.sh
+ExecStop=/bin/kill $MAINPID
+
+[Install]
+WantedBy=multi-user.target

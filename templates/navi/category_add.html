@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <section class="content">
+        <div class="box">
+            <div class="box-body">
+                <form action="{% url 'category_add' %}" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交"> 
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+{#回传参数至父层#}
+<script type="text/javascript">
+    var index = parent.layer.getFrameIndex(window.name);
+    var result = {{ status }};
+    if ( result > 0 ) {
+        parent.$("#category_status").val(result);
+        parent.layer.close(index);
+    }
+</script>
+</body>
+</html>

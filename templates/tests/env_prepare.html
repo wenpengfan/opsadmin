@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+	<script src="/static/plugins/toastr/toastr.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.center.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    toastr.options = {
+        positionClass: "toast-center-center"
+    }
+</script>
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("tests");
+        box.className="active";
+        var box2 = document.getElementById("environment");
+        box2.className="active";
+	}
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+		<form action="" method="post" id="env_form">
+            {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                </div>
+				<div class="col-md-5">
+                    <label for="page_len">
+						<select name="page_len" id="page_len" class="form-control m-b input-sm" onchange="change_info()">
+                            {% ifequal page_len '10' %}
+                                <option value="10" selected>10</option>
+                            {% else %}
+                                <option value="10">10</option>
+                            {% endifequal %}
+                            {% ifequal page_len '20' %}
+                                <option value="20" selected>20</option>
+                            {% else %}
+                                <option value="20">20</option>
+                            {% endifequal %}
+                            {% ifequal page_len '50' %}
+                                <option value="50" selected>50</option>
+                            {% else %}
+                                <option value="50">50</option>
+                            {% endifequal %}
+                            {% ifequal page_len '100' %}
+                                <option value="100" selected>100</option>
+                            {% else %}
+                                <option value="100">100</option>
+                            {% endifequal %}
+                            {% ifequal page_len '200' %}
+                                <option value="200" selected>200</option>
+                            {% else %}
+                                <option value="200">200</option>
+                            {% endifequal %}
+                        </select>
+                    </label>
+            		<label>
+                    	<select name="product_id" id="product_select" class="form-control m-b input-sm" onchange="change_info()">
+                    		{% ifequal product_id 0 %}
+								<option value="0" selected>---------</option>
+							{% else %}
+								<option value="0">---------</option>
+							{% endifequal %}
+                    		{% for product in all_product %}
+                    			{% ifequal product_id product.id %}
+                    				<option value="{{ product.id }}" selected>{{ product.name }}</option>
+                    			{% else %}
+                    				<option value="{{ product.id }}">{{ product.name }}</option>
+                    			{% endifequal %}
+                    		{% endfor %}
+                    	</select>
+                    </label>
+                    <div class="btn btn-group" style="padding-left: 0">
+						<input type="button" id="env_sync" class="btn btn-primary" name="env_sync" value="应用同步"/>
+                    </div>
+                </div>
+            	<div class="box-body">
+            		<table class="table table-striped table-bordered" id="envform">
+						<thead>
+                            <tr>
+                                <th>
+                                    <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable="false" onclick="check_all('env_form')">
+                                </th>
+                                <th>应用名称</th>
+                                <th>应用类型</th>
+                                <th>测试版本</th>
+                                <th>预发布版本</th>
+                                <th>TestAnsible项目号</th>
+                                <th>TestAnsible模板号</th>
+                                <th>PreAnsible项目号</th>
+                                <th>PreAnsible模板号</th>
+                                <th>同步时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+							</tr>
+                        </thead>
+                        <tbody>
+            				{% for env in envs.object_list %}
+            					<tr class="even gradeX">
+                            		<td><input type="checkbox" id="id" class="i-checks" value="{{ env.id }}" name="id" /></td>
+                            		<td>{{ env.project }}</td>
+                            		<td>
+                                        {% if env.app_type == 0 %}
+                                            <span>docker</span>
+                                        {% else %}
+                                            <span>other</span>
+                                        {% endif %}
+                                    </td>
+                            		<td>{{ env.test_ver }}</td>
+                            		<td>{{ env.pre_ver }}</td>
+                            		<td>{{ env.test_pid }}</td>
+                            		<td>{{ env.test_tid }}</td>
+                            		<td>{{ env.pre_pid }}</td>
+                            		<td>{{ env.pre_tid }}</td>
+                            		<td id="endtime_{{ env.id }}">{{ env.endtime|date:"Y-m-d H:i:s" }}</td>
+                            		<td>
+										{% if env.is_enable == False %}
+											<span class="label label-default">禁用</span>
+										{% else %}
+											<span class="label label-success">启用</span>
+										    {% if env.task_status == 0 %}
+                                            <span id="status_{{ env.id }}" class="progress label label-info">准备中</span>
+										    {% elif env.task_status == 1 %}
+										    	<span id="status_{{ env.id }}" class="progress label label-warning">同步中</span>
+										    {% elif env.task_status == 2 %}
+										    	<span id="status_{{ env.id }}" class="label label-success">同步成功</span>
+										    {% else %}
+                                                <span id="status_{{ env.id }}" class="label label-danger">同步失败</span>
+										    {% endif %}
+										{% endif %}
+									</td>
+                            		<td>
+                                        {% if env.is_enable == True %}
+                                        <a id="versynclog_{{ env.id }}" style="display: block; float: left; margin-right: 5px;" href="#" class="btn btn-sm btn-primary" onclick="return popLog('{{ env.project }}', {{ env.id }})">
+                                                日志
+                                            </a>
+                                        {% endif %}
+										<a id="envedit" style="display: block; float: left; margin: auto;" href="#" class="btn btn-sm btn-info" onclick="return envEdit({{ env.id }})">
+                                            编辑
+                                        </a>
+									</td>
+                            	</tr>
+							{% endfor %}
+					</table>
+					<div class="row">
+                        {% include 'paginator.html' %}
+                    </div>
+                    <div class="btn-group">
+                        <input type="button" id="disable_all" class="btn btn-warning" name="disable_all" value="批量禁用"/>
+                    </div>
+                    <div class="btn-group">
+                        <input type="button" id="enable_all" class="btn btn-success" name="enable_all" value="批量启用"/>
+                    </div>
+				</div>
+			</div>
+		</form>
+    </section>
+</div>
+<input id="handle_status" value="" hidden="hidden">
+
+<script>
+    $(function () {
+      $('#envform').DataTable({
+          "paging": false,
+          "lengthChange": true,
+          "searching": false,
+          "ordering": true,
+          "info": true,
+          "bAutoWidth": false,
+          "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 10, 11]}],
+          "aaSorting": [[1, "asc"]]
+      });
+    });
+</script>
+<script>
+    function change_info(){
+        var args = $("#env_form").serialize();
+        window.location = "{% url 'env_prepare' %}?" + args;
+    }
+</script>
+<script>
+    $('#env_sync').click(function () {
+        var select = document.getElementById("product_select");
+        var index = select.selectedIndex;
+        var prod_id = select.options[index].value;
+        var prod_text = select.options[index].text;
+        if (prod_id != 0) {
+        	if (confirm("确定同步产品线："+prod_text+"？")) {
+				$.ajax({
+        	    	type: "post",
+        	        data: {product_id: prod_id,csrfmiddlewaretoken: '{{ csrf_token }}'},
+        	        url: "{% url 'env_project_sync' %}",
+        	        success: function (status) {
+        	        	if (status == 1) {
+            				toastr.warning("同步成功");
+							setTimeout(function() {
+                				location.reload();
+                			},1000)
+                		} else if (status == 2) {
+            				toastr.warning("同步失败");
+        	        	}
+        	        }
+        	    })
+			} else {
+        	    window.event.returnValue = false;
+        	}
+        }
+    })
+</script>
+<script>
+    $('#disable_all').click(function () {
+        var env_id_all = getIDall();
+        if (env_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定禁用?")) {
+            $.ajax({
+                type: "post",
+                data: {env_id_all: env_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'env_disable' %}",
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+    $('#enable_all').click(function () {
+        var env_id_all = getIDall();
+        if (env_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定启用?")) {
+            $.ajax({
+                type: "post",
+                data: {env_id_all: env_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'env_enable' %}",
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+    function popLog(project, id){
+        layer.open({
+        type: 2,
+            title: 'Task Log - <label class="label label-primary"><strong>' + project + '</strong></label>',
+        closeBtn: 1,
+        area: ['800px', '768px'],
+        shadeClose: true, //点击遮罩关闭
+        content: ['/tests/envtasklog?id='+id],
+        end: function(){
+            }
+      });
+    }
+</script>
+<script>
+    function envEdit(n){
+        layer.open({
+        type: 2,
+        title: '修改信息',
+        closeBtn: 1,
+        area: ['600px', '500px'],
+        shadeClose: true, //点击遮罩关闭
+        content: ['/tests/envedit?id=' + n],
+        end:function(){
+                var handle_status = $("#handle_status").val();
+                if ( handle_status == '1' ) {
+                    layer.msg('保存成功！',{
+                        icon: 1,
+                        time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                    },function(){
+                        history.go(0);
+                    });
+                } else if ( handle_status == '2' ) {
+                    layer.msg('修改失败！',{
+                        icon: 2,
+                        time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                    },function(){
+                        history.go(0);
+                    });
+                }
+            }
+      });
+    }
+</script>
+<script>
+	var prog = window.setInterval("updateStatus()",1000);
+	function updateStatus() {
+		var ids = $("span[id^=status_]");
+		var arr = new Array();
+		for (var i=0;i<ids.length;i++) {
+            if ($('#'+ids[i].id).hasClass("progress")) {
+				var env_id = ids[i].id.split("_")[1];
+				arr.push(env_id);
+		    }
+        }
+        var environment_id_all = arr.join(",");
+		if (environment_id_all != "") {
+			$.ajax({
+				type: "post",
+					data: {environment_id_all: environment_id_all,csrfmiddlewaretoken: '{{ csrf_token }}'},
+        	    	url: "{% url 'env_task_status' %}",
+        	     	success: function (result) {
+        	      		var resultJson = JSON.parse(result);
+        	      		for (var key in resultJson) {
+                            var task_status = resultJson[key].split(';')[0];
+                            var project_name = resultJson[key].split(';')[1];
+                            var end_time = resultJson[key].split(';')[2];
+        	      			if (task_status == 0) {
+								$('#status_'+key).text('准备中');
+								$('#status_'+key).removeClass().addClass('progress label label-info');
+                                $('#versynclog_'+key).attr("disabled", "disabled");
+                                $('#versynclog_'+key).removeAttr("href");
+                                $('#versynclog_'+key).removeAttr("onclick");
+        	      			} else if (task_status == 1) {
+								$('#status_'+key).text('同步中');
+								$('#status_'+key).removeClass().addClass('progress label label-warning');
+                                $('#versynclog_'+key).removeAttr("disabled");
+                                $('#versynclog_'+key).attr("href", "#");
+                                $('#versynclog_'+key).attr("onclick", 'return popLog("'+ project_name +'",' + key +')');
+        	      			} else if (task_status == 2) {
+								$('#status_'+key).text('同步成功');
+								$('#status_'+key).removeClass().addClass('label label-success');
+                                $('#versynclog_'+key).removeAttr("disabled");
+                                $('#versynclog_'+key).attr("href", "#");
+                                $('#versynclog_'+key).attr("onclick", 'return popLog("'+ project_name +'",' + key +')');
+								$('#endtime_'+key).text(end_time);
+        	      			} else {
+								$('#status_'+key).text('同步失败');
+								$('#status_'+key).removeClass().addClass('label label-danger');
+                                $('#versynclog_'+key).removeAttr("disabled");
+                                $('#versynclog_'+key).attr("href", "#");
+                                $('#versynclog_'+key).attr("onclick", 'return popLog("'+ project_name +'",' + key +')');
+								$('#endtime_'+key).text(end_time);
+							}
+        	      		}
+        	    	}
+			})
+		}
+	}
+</script>
+{% endblock %}

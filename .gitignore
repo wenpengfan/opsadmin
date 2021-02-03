@@ -1,0 +1,8 @@
+*.pyc
+celery_start.sh
+celery_stop.sh
+node1.*
+data
+bin/
+pid/
+/opsadmin.conf

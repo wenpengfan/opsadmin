@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/chartjs/Chart.min.js"></script>
+    <script src="/static/plugins/daterangepicker/moment.min.js"></script>
+    <script src="/static/plugins/daterangepicker/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css">
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("workload");
+        box.className="active";
+        var box2 = document.getElementById("summary");
+        box2.className="active";
+        }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="summary_form">
+            {% csrf_token %}
+            <button type="button" class="btn btn-default pull-left" id="daterange-btn">
+                <span>
+                    <i class="fa fa-calendar"></i> 
+                    {{ start_date }} 到 {{ end_date }}
+                </span>
+                    <i class="fa fa-caret-down"></i>
+            </button>
+            <br>
+            <br>
+            <div class="box" style="width: 75%">
+                <div class="box-header with-border">
+                    <div>工作量汇总</div>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="chart-container">
+                        <canvas id="summaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    $('#daterange-btn').daterangepicker({
+        ranges: {
+          '今天': [moment(), moment()],
+          '昨天': [moment().subtract(1, 'day').startOf('day'), moment().subtract(1, 'day').endOf('day')],
+          '本周': [moment().startOf('week'), moment().endOf('week')],
+          '上周': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+          '本月': [moment().startOf('month'), moment().endOf('month')],
+          '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+          '本季': [moment().startOf('quarter'), moment().endOf('quarter')],
+          '上季': [moment().subtract(1, 'quarter').startOf('quarter'), moment().subtract(1, 'quarter').endOf('quarter')]
+        },
+        startDate: moment("{{ start_date }}"),
+        endDate: moment("{{ end_date }}"),
+        locale : {
+            applyLabel : '确定',
+            cancelLabel : '取消',
+            customRangeLabel : '自定义',
+            daysOfWeek : [ '日', '一', '二', '三', '四', '五', '六' ],
+            monthNames : [ '一月', '二月', '三月', '四月', '五月', '六月',
+                    '七月', '八月', '九月', '十月', '十一月', '十二月' ],
+            firstDay : 1
+        }
+        }, function(start, end) {
+            start_date = start.format('YYYY-MM-DD');
+            end_date = end.format('YYYY-MM-DD');
+            window.location = "{% url 'summary_list' %}?start_date=" + start_date + "&end_date=" + end_date;
+        }
+    );
+</script>
+<script>
+    var arrayLabels = "{{ labels }}".split(",");
+    var summaryChartCanvas = $("#summaryChart").get(0).getContext("2d");
+    var summaryChart = new Chart(summaryChartCanvas);
+    var chartData = {
+        labels: arrayLabels,
+        datasets: [
+          {
+            label: "运维工单",
+            fillColor: "rgba(54, 162, 235, 0.8)",
+            strokeColor: "rgba(0, 0, 0, 0.1)",
+            data: {{ deploy_data|safe }}
+          },
+          {
+            label: "数据库工单",
+            fillColor: "rgba(255, 99, 132, 0.8)",
+            strokeColor: "rgba(0, 0, 0, 0.1)",
+            data: {{ dbscript_data|safe }}
+          },
+          {
+            label: "其他工单",
+            fillColor: "rgba(255, 205, 86, 0.8)",
+            strokeColor: "rgba(0, 0, 0, 0.1)",
+            data: {{ require_data|safe }}
+          }
+        ]
+        };
+    var chartOptions = {
+      scaleBeginAtZero: true,
+      scaleShowGridLines: true,
+      scaleGridLineColor: "rgba(0,0,0,.05)",
+      scaleGridLineWidth: 1,
+      scaleShowHorizontalLines: true,
+      scaleShowVerticalLines: true,
+      barShowStroke: true,
+      barStrokeWidth: 2,
+      barValueSpacing: 5,
+      barDatasetSpacing: 1,
+      responsive: true,
+      maintainAspectRatio: true
+    };
+    summaryChart.Bar(chartData, chartOptions);
+</script>
+{% endblock %}

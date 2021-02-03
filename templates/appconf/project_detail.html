@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+</head>
+<body>
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <section class="content">
+        <div class="box">
+            <div class="box-body">
+                <table class="table table-striped table-bordered" id="project_detail_table">
+                    <thead>
+                          <tbody>
+                              <tr class="even gradeX">
+                                  <td>应用名称：</td>
+                                  <td>{{ project_detail.name }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>应用描述：</td>
+                                  <td>{{ project_detail.description|linebreaks }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>当前版本：</td>
+                                  <td>{{ project_detail.current_ver }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>语言类型：</td>
+                                  <td>{{ project_detail.language_type }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>程序类型：</td>
+                                  <td>{{ project_detail.app_type }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>程序框架：</td>
+                                  <td>{{ project_detail.app_arch }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>代码库地址：</td>
+                                  <td>{{ project_detail.code_address }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>启动命令：</td>
+                                  <td>{{ project_detail.start_cmd }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>停止命令：</td>
+                                  <td>{{ project_detail.stop_cmd }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>配置文件说明：</td>
+                                  <td>{{ project_detail.config_detail|linebreaks }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>Docker容器说明：</td>
+                                  <td>{{ project_detail.docker_expose|linebreaks }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>需要的业务监控项：</td>
+                                  <td>{{ project_detail.app_monitor }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>高可用说明：</td>
+                                  <td>{{ project_detail.need_ha }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>需要新增域名：</td>
+                                  <td>{{ project_detail.need_dn }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>需要新增二级目录：</td>
+                                  <td>{{ project_detail.need_location }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>URI映射关系：</td>
+                                  <td>{{ project_detail.uri_mapping_from }}&nbsp;&rarr;&nbsp;{{ project_detail.uri_mapping_to }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>是否需要访问外网：</td>
+                                  <td>{{ project_detail.need_wan }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>调用方：</td>
+                                  <td>{{ project_detail.requester }}</td>
+                              </tr>
+                              <tr class="even gradeX">
+                                  <td>应用依赖的其他需求：</td>
+                                  <td>{{ project_detail.rely_on|linebreaks }}</td>
+                              </tr>
+                          </tbody>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    $(function () {
+      $('#project_detail_table').DataTable({
+        "paging": false,
+        "lengthChange": false,
+        "searching": false,
+        "ordering": false,
+        "info": false,
+        "autoWidth": true
+      });
+    });
+</script>
+<script>
+    $("td,th").addClass("text-left");
+</script>
+</body>
+</html>

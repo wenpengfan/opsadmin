@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/static/layer/layer.js"></script>
+{% endblock %}
+
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        var box = document.getElementById("appconf");
+        box.className="active";
+        var box2 = document.getElementById("product");
+        box2.className="active";
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+            </div>
+            <div class="box-body">
+            {% if product_id %}
+                <form action="{% url 'product_edit' product_id %}" method="post">
+            {% else %}
+                <form action="{% url 'product_add' %}" method="post">
+            {% endif %}
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="fieldWrapper">
+                    {{ field.errors }}
+                    {% if field.html_name == "owner" %}
+                        <table style="margin-bottom: 10px;">
+                            <tr>
+                                <th style="padding-bottom: 5px;">{{ field.label_tag }}</th>
+                            </tr>
+                            <tr>
+                                <td>{{ field }}</td>
+                                <td>&nbsp;&nbsp;</td>
+                                <td><a id="appowneraddmini" style="display: block" class="btn btn-success" href="#" onclick="return popWin()">添加负责人</a>
+                                </td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        {{ field.label_tag }}{{ field }}
+                    {% endif %}
+					<td>&nbsp;&nbsp;</td>
+                </div>
+            {% endfor %}
+                <a href="{% url 'product_list' %}"><li style="width: 60pt" class="btn btn-primary" value="">返回</li></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交"><br>
+                </form>
+            </div>
+            <div class="box-footer">
+                <i class="fa fa-info-circle"></i> 请勿重复添加条目
+            </div>
+        </div>
+    </section>
+    {#用于接收appowner_base.html中layui子层的传值#}
+    <input id="handle_status" value="" hidden="hidden">
+    <input id="new_owner_id" value="" hidden="hidden">
+    <input id="new_owner_name" value="" hidden="hidden">
+</div>
+
+<script>
+    function popWin(){
+      layer.open({
+          type: 2,
+          title: '应用列表',
+          area: ['700px', '500px'],
+          shadeClose: true, //点击遮罩关闭
+          content: ['/appconf/appowneraddmini/'],
+          end:function(){
+                var handle_status = $("#handle_status").val();
+                if ( handle_status == '1' ) {
+                    layer.msg('添加成功！',{
+                        icon: 1,
+                        time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                    },function(){
+                        var new_owner_id = $("#new_owner_id").val();
+                        var new_owner_name = $("#new_owner_name").val();
+                        $('#id_owner').append("<option value="+new_owner_id+" selected='selected'>"+new_owner_name+"</option>");
+                    });
+                } else if ( handle_status == '2' ) {
+                    layer.msg('添加失败！',{
+                        icon: 2,
+                        time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                    },function(){
+    
+                    });
+                }
+          }
+      });
+    }
+</script>
+{% endblock %}

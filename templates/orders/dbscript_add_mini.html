@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+    <script src="/static/layer/layer.js"></script>
+    <script src="/static/js/base.js"></script>
+    <script src="/static/plugins/toastr/toastr.min.js"></script>
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="/static/js/jquery.cxcalendar.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.cxcalendar.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/datatables/dataTables.bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.css">
+    <link rel="stylesheet" type="text/css" href="/static/plugins/toastr/toastr.center.css">
+</head>
+<body>
+<script>
+    toastr.options = {
+        positionClass: "toast-center-center"
+    }
+</script>
+<script>
+    window.onload=init;
+    function init() {
+        {% if status == 3 %}
+            alert("同名脚本文件已存在！")
+        {% endif %}
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+    <section class="content">
+        <div class="box">
+            <div class="box-body">
+                <form enctype="multipart/form-data" action="{% url 'dbscript_add_mini' %}" method="post">
+                    {% csrf_token %}
+                    <table style="margin-bottom: 10px;">
+                        <td>
+                            <label style="padding-right: 10px;">上传数据库脚本:</label>
+                        </td>
+                        <td>
+                            <input type="file" name="dbscript_file"></input>
+                        </td>
+                    </table>
+                    {% for item in form %}
+                        {% if item.name != "description" %}
+                            <p>
+                                <label>{{ item.label }}:</label>
+                                {{ item }}
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交"> 
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+{#回传参数至父层#}
+<script type="text/javascript">
+    var index = parent.layer.getFrameIndex(window.name);
+    var result = {{ status }};
+    if (result > 0) {
+        var dbscript_id = "{{ dbscript_id }}";
+        parent.$("#new_dbscript_id").val(dbscript_id);
+        parent.$("#dbscript_status").val(result);
+        parent.layer.close(index);
+    }
+</script>
+<script>
+    $('#id_operating_time').cxCalendar({
+    	date: new Date().getTime()+14*24*60*60*1000,
+        type: 'datetime',
+        format: 'YYYY-MM-DD HH:mm:ss',
+        position: 'bottom'
+    });
+</script>
+</body>
+</html>

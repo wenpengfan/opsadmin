@@ -1,0 +1,14 @@
+[Unit]
+Description=opsadmin
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/app/opsadmin
+ExecStart=/usr/bin/gunicorn -c gunicorn_conf.py opsadmin.wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+</head>
+<body>
+<div class="content-wrapper">
+    <section class="content">
+        <!-- Default box -->
+        <div class="box">
+            <div class="box-header with-border">
+            </div>
+            <div class="box-body">
+                {% if apply_id %}
+                    <form enctype="multipart/form-data" action="{% url 'apply_edit' apply_id %}" method="post">
+                {% else %}
+                    <form enctype="multipart/form-data" action="{% url 'apply_add' %}" method="post">
+                {% endif %}
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" style="width: 60pt" class="btn btn-primary" value="">提交</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+{#回传参数至父层#}
+<script type="text/javascript">
+        var index = parent.layer.getFrameIndex(window.name);
+        var success = {{ status }};
+        if ( success == '1' ) {
+            parent.$("#handle_status").val('1');
+            parent.layer.close(index);
+        } else if( success == '2' ) {
+            parent.$("#handle_status").val('2');
+            parent.layer.close(index);
+        } else if( success == '3' ) {
+            parent.$("#handle_status").val('3');
+            parent.layer.close(index);
+        }
+</script>
+</body>
+</html>
