@@ -6,7 +6,7 @@ from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from orders.models import Deploy, Document, Config
+from orders.models import Deploy, Document
 from orders.forms import DeployForm, DeployEditForm, DocumentForm
 from appconf.models import Product, Project, AppOwner 
 from accounts.permission import permission_verify, permission_deny

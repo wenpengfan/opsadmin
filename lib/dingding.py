@@ -24,14 +24,16 @@ def dingding_token():
 def dingding_msg(uid, text):
     json_content = {
                     "touser"  : uid,
-                    "agentid" : "249216975",
+                    "agentid" : "1090501715",
                     "msgtype" : "text",
                     "text"    : {
                     "content" : text
                                 }
                    }
     jdata = json.dumps(json_content)
+    print json_content
     access_token = dingding_token()
+    print access_token
     url = 'https://oapi.dingtalk.com/message/send?access_token=%s' % access_token
     req = urllib2.Request(url, jdata)
     req.add_header('content-type', 'application/json')

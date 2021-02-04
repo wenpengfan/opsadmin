@@ -46,8 +46,6 @@ class Deploy(models.Model):
     app_name = models.ForeignKey(Project, verbose_name=u"应用名称", on_delete=models.deletion.SET_NULL, null=True, blank=False)
     description = models.CharField(max_length=5000, verbose_name=u"更新描述", null=True, blank=False)
     version = models.CharField(max_length=255, verbose_name=u"程序版本号", blank=False,unique=True)
-    conf_version = models.ForeignKey('Config',to_field="conf_version", verbose_name=u"配置版本号",
-                                     on_delete=models.deletion.SET_NULL, null=True, blank=True)
     status = models.BooleanField(verbose_name=u"部署状态", default=False)
     create_time = models.DateTimeField(verbose_name=u"创建时间", auto_now_add=True)
     operating_time = models.DateTimeField(verbose_name=u"预约操作时间", null=True, blank=False)
@@ -66,27 +64,6 @@ class Deploy(models.Model):
         unique_together = ('app_name', 'version',)
         ordering = ['-completion_time','operating_time']
 
-class Config(models.Model):
-    app_name = models.ForeignKey(Project, verbose_name=u"应用名称",on_delete=models.deletion.SET_NULL, null=True, blank=False)
-    env = models.CharField(max_length=255, verbose_name=u"环境", null=True, blank=False)
-    description = models.CharField(max_length=5000, verbose_name=u"更新描述", null=True, blank=False)
-    conf_version = models.CharField(max_length=255, verbose_name=u"配置版本号", blank=False,unique=True)
-    app_version = models.ForeignKey('Deploy',to_field="version", verbose_name=u"程序版本号",
-                                    on_delete=models.deletion.SET_NULL, null=True, blank=True)
-    status = models.BooleanField(verbose_name=u"部署状态", default=False)
-    create_time = models.DateTimeField(verbose_name=u"创建时间", auto_now_add=True)
-    operating_time = models.DateTimeField(verbose_name=u"预约操作时间", null=True, blank=False)
-    update_time = models.DateTimeField(verbose_name=u"更新时间", auto_now=True)
-    order_user = models.CharField(max_length=255, verbose_name=u"提交用户", null=True, blank=True)
-    order_status = models.BooleanField(verbose_name=u"工单状态", default=False)
-    completion_time = models.DateTimeField(verbose_name=u"完成时间", null=True, blank=True)
-
-    def __unicode__(self):
-        return self.conf_version
-
-    class Meta:
-        unique_together = ('app_name', 'conf_version','app_version')
-        ordering = ['-completion_time','operating_time']
 
 class Document(models.Model):
     doc_id = models.IntegerField(u"文档编号", default=0)

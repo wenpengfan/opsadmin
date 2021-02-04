@@ -160,7 +160,6 @@ def require_finish(request, require_id):
             require = Require.objects.get(id=require_id)
             title = require.title
             msg_user = AppOwner.objects.filter(username__username=require.order_user).values("dingding").first()
-            
             if msg_user is not None and title is not None:
                 if msg_user["dingding"] is not None:
                     dingding_msg.delay(msg_user["dingding"], u"您的工单（编号：%s）已处理，标题为：%s" % (require_id, title))

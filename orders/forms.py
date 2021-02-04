@@ -4,38 +4,8 @@
 from __future__ import absolute_import, unicode_literals
 from django import forms
 from django.forms.widgets import * 
-from orders.models import Deploy, DBScript, Require, Config
+from orders.models import Deploy, DBScript, Require
 from appconf.models import Project
-
-class ConfigScriptForm(forms.ModelForm):
-
-    class Meta:
-        model = Config
-        exclude = ("id", "env", "create_time", "update_time", "status",
-                   "order_user", "completion_time", "order_status")
-
-        widgets = {
-            'app_name': Select(attrs={'class': 'form-control','style': 'width:450px;'}),
-            'description': Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),
-            'conf_version': TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
-            'app_version': Select(attrs={'class': 'form-control','style': 'width:450px;'}),
-            'operating_time': DateTimeInput(attrs={'class': 'form-control', 'style': 'width:450px;',
-                                                  'placeholder': u'2020-01-01 12:00:00', 'autocomplete': 'off'}),
-        }
-
-
-class ConfigScriptEditForm(forms.ModelForm):
-
-    class Meta:
-        model = Config
-        exclude = ("id", "app_name", "env", "create_time", "update_time", "status",
-                   "order_user", "completion_time","conf_version","order_status","app_version")
-
-        widgets = {
-            'description': Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),
-            'operating_time': DateTimeInput(attrs={'class': 'form-control', 'style': 'width:450px;',
-                                                  'placeholder': u'2020-01-01 12:00:00', 'autocomplete': 'off'}),
-        }
 
 class DeployForm(forms.ModelForm):
 
@@ -48,7 +18,6 @@ class DeployForm(forms.ModelForm):
             'app_name': Select(attrs={'class': 'selectpicker', 'data-live-search': 'true', 'data-width': '250px'}),
             'description': Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),
             'version': TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
-            'conf_version': Select(attrs={'class': 'form-control', 'style': 'width:450px;'}),
             'operating_time': DateTimeInput(attrs={'class': 'form-control', 'style': 'width:450px;',
                                                   'placeholder': u'2020-01-01 12:00:00', 'autocomplete': 'off'}),
             'dbscript': TextInput(attrs={'hidden': 'hidden'}),
@@ -64,7 +33,7 @@ class DeployEditForm(forms.ModelForm):
     class Meta:
         model = Deploy 
         exclude = ("id", "app_name", "version", "status", "create_time",
-                   "update_time", "order_user", "order_status", "is_new", "is_tested","conf_version")
+                   "update_time", "order_user", "order_status", "is_new", "is_tested")
 
         widgets = {
             'description': Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),

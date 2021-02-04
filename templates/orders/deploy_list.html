@@ -101,7 +101,6 @@
                                 <th>编号</th>
                                 <th>应用名称</th>
                                 <th>程序版本号</th>
-                                <th>配置版本号</th>
                                 <th>工单创建时间</th>
                                 <th>申请人</th>
                                 <th>预约操作时间</th>
@@ -119,9 +118,6 @@
                                     <td><a href="#"><li style="list-style-type:none" onclick="return popWin(this.value)" value="{{ deploy.id }}">{{ deploy.app_name }}</li></a></td>
                                     <td>
                                     	<div id="version_{{ deploy.id }}">{{ deploy.version }}</div>
-                                    </td>
-                                    <td>
-                                    	<div id="version_{{ deploy.id }}">{{ deploy.conf_version }}</div>
                                     </td>
                                     <td>{{ deploy.create_time|date:"Y-m-d H:i:s" }}</td>
                                     <td>{{ deploy.order_user }}</td>
@@ -196,8 +192,8 @@
           "ordering": true,
           "info": true,
           "bAutoWidth": false,
-          "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 9, 11]}],
-          "aaSorting": [[8, "desc"], [7, "asc"]]
+          "aoColumnDefs": [{"bSortable": false, "aTargets": [0, 9]}],
+          "aaSorting": [[7, "desc"], [6, "asc"]]
       });
     });
 </script>

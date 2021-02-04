@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf.urls import url, include
-from orders import deploy, dbscript, require,config
+from orders import deploy, dbscript, require
 
 
 urlpatterns = [
@@ -28,11 +28,4 @@ urlpatterns = [
     url(r'^requireedit/(?P<require_id>\d+)/$', require.require_edit, name='require_edit'),
     url(r'^requirefinish/(?P<require_id>\d+)/$', require.require_finish, name='require_finish'),
     url(r'^requiredetail/(?P<require_id>\d+)/$', require.require_detail, name='require_detail'),
-
-    url(r'^config/$', config.config_list, name='config_list'),
-    url(r'^configadd/$', config.config_add, name='config_add'),
-    url(r'^configdel/$', config.config_del, name='config_del'),
-    url(r'^configedit/(?P<config_id>\d+)/$', config.config_edit, name='config_edit'),
-    url(r'^configfinish/(?P<config_id>\d+)/$', config.config_finish, name='config_finish'),
-    url(r'^configdetail/(?P<config_id>\d+)/$', config.config_detail, name='config_detail'),
 ]
