@@ -54,7 +54,6 @@ class Deploy(models.Model):
     order_status = models.BooleanField(verbose_name=u"工单状态", default=False)
     dbscript = models.ForeignKey(DBScript, verbose_name=u"数据库工单", on_delete=models.deletion.SET_NULL, null=True, blank=True)
     is_new = models.BooleanField(verbose_name=u"是否新应用", default=False)
-    is_tested = models.IntegerField(u"是否测试通过，0：未确定，1：测试通过，2：测试未通过", default=0, null=True, blank=False)
     completion_time = models.DateTimeField(verbose_name=u"完成时间", null=True, blank=True)
 
     def __unicode__(self):

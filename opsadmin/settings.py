@@ -75,7 +75,6 @@ INSTALLED_APPS = [
     'accounts',
     'appconf',
     'orders',
-    'tests',
     'workload',
     'djcelery',
     'rest_framework',

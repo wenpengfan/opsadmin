@@ -12,6 +12,5 @@ urlpatterns = [
     url(r'^accounts/', include('accounts.urls')),
     url(r'^appconf/', include('appconf.urls')),
     url(r'^orders/', include('orders.urls')),
-    url(r'^tests/', include('tests.urls')),
     url(r'^workload/', include('workload.urls')),
 ]

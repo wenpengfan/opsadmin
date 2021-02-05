@@ -13,7 +13,6 @@ urlpatterns = [
     url(r'^deployfinish/(?P<deploy_id>\d+)/$', deploy.deploy_finish, name='deploy_finish'),
     url(r'^deploydetail/(?P<deploy_id>\d+)/$', deploy.deploy_detail, name='deploy_detail'),
     url(r'^deploydoc/$', deploy.deploy_doc, name='deploy_doc'),
-    url(r'^deployteststatus/$', deploy.deploy_test_status, name='deploy_test_status'),
     url(r'^dbscript/$', dbscript.dbscript_list, name='dbscript_list'),
     url(r'^dbscriptadd/$', dbscript.dbscript_add, name='dbscript_add'),
     url(r'^dbscriptaddmini/$', dbscript.dbscript_add_mini, name='dbscript_add_mini'),

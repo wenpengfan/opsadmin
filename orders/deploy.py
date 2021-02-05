@@ -12,7 +12,6 @@ from appconf.models import Product, Project, AppOwner
 from accounts.permission import permission_verify, permission_deny
 from lib.api import pages
 from lib.dingding import dingding_msg
-from lib.harbor import check_image_tag
 import datetime
 import json
 
@@ -67,20 +66,17 @@ def deploy_add(request):
         if form.is_valid():
             app_name_id = form.cleaned_data["app_name"].id
             version = form.cleaned_data["version"]
-            if ".Test" in version or ".Release" in version:
-                status = 4
+            deploy_form = form.save(commit=False)
+            deploy_form.order_user = request.user.username
+            if not Deploy.objects.filter(app_name_id=app_name_id).exists():
+                deploy_form.is_new = True
+            deploy_status = Deploy.objects.filter(Q(app_name_id=app_name_id) & Q(status=0))
+            if deploy_status.exists():
+                status = 3
             else:
-                deploy_form = form.save(commit=False)
-                deploy_form.order_user = request.user.username
-                if not Deploy.objects.filter(app_name_id=app_name_id).exists():
-                    deploy_form.is_new = True 
-                deploy_status = Deploy.objects.filter(Q(app_name_id=app_name_id) & Q(status=0))
-                if deploy_status.exists(): 
-                    status = 3 
-                else:
-                    deploy_form.save()
-                    status = 1
-                    return HttpResponseRedirect(reverse('deploy_doc')+"?app_name_id=%s&version=%s" % (app_name_id, version))
+                deploy_form.save()
+                status = 1
+                return HttpResponseRedirect(reverse('deploy_doc')+"?app_name_id=%s&version=%s" % (app_name_id, version))
         else:
             status = 2 
     else:
@@ -278,29 +274,3 @@ def deploy_doc(request):
         'request': request,
     }
     return render(request, 'orders/deploy_document.html', results)
-
-
-@login_required
-@permission_verify()
-def deploy_test_status(request):
-    status = {}
-    deploy_id_all = str(request.POST.get('deploy_id_all', ''))
-    if deploy_id_all:
-        for deploy_id in deploy_id_all.split(','):
-            try:
-                deploy = Deploy.objects.get(id=deploy_id)
-                product_name = Project.objects.get(id=deploy.app_name_id).product.codename
-                repo_name = "%s/%s" % (product_name, deploy.app_name)
-                tag = "%s.Release" % deploy.version
-                result = check_image_tag(repo_name, tag)
-                if result:
-                    status[deploy_id] = 1 
-                    Document.objects.filter(Q(name=deploy.app_name) & Q(next_ver=deploy.version)) \
-                                    .update(next_ver=tag)
-                    Deploy.objects.filter(id=deploy_id).update(version=tag, is_tested=1)
-                else:
-                    status[deploy_id] = 2
-                    Deploy.objects.filter(id=deploy_id).update(is_tested=2)
-            except:
-                return HttpResponseRedirect(reverse('permission_deny'))
-    return HttpResponse(json.dumps(status, ensure_ascii=False))

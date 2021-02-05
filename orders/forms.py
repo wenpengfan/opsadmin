@@ -12,7 +12,7 @@ class DeployForm(forms.ModelForm):
     class Meta:
         model = Deploy
         exclude = ("id", "status", "create_time", "update_time",
-                   "order_user", "order_status", "is_new", "is_tested", "completion_time")
+                   "order_user", "order_status", "is_new", "completion_time")
 
         widgets = {
             'app_name': Select(attrs={'class': 'selectpicker', 'data-live-search': 'true', 'data-width': '250px'}),
@@ -33,7 +33,7 @@ class DeployEditForm(forms.ModelForm):
     class Meta:
         model = Deploy 
         exclude = ("id", "app_name", "version", "status", "create_time",
-                   "update_time", "order_user", "order_status", "is_new", "is_tested")
+                   "update_time", "order_user", "order_status", "is_new")
 
         widgets = {
             'description': Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),

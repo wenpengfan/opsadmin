@@ -60,7 +60,7 @@ def _summary_deploy(sdate, edate):
                  (SELECT a.id AS id, c.name AS name FROM 
                  orders_deploy a, appconf_project b, appconf_appowner c
                  WHERE a.app_name_id = b.id AND b.ops_id = c.id AND a.status = 1
-                 AND (a.updatetime >= '%s' AND a.updatetime <= '%s')) d
+                 AND (a.update_time >= '%s' AND a.update_time <= '%s')) d
                  GROUP BY name''' % ('%s 00:00:00' % sdate, '%s 23:59:59' % edate) 
     cursor.execute(deploy_sql)
     deploys = cursor.fetchall()
@@ -73,7 +73,7 @@ def _summary_dbscript(sdate, edate):
                  (SELECT a.id AS id, c.name AS name FROM 
                  orders_dbscript a, appconf_database b, appconf_appowner c
                  WHERE a.db_name_id = b.id AND b.ops_id = c.id AND a.status = 1
-                 AND (a.updatetime >= '%s' AND a.updatetime <= '%s')) d
+                 AND (a.update_time >= '%s' AND a.update_time <= '%s')) d
                  GROUP BY name''' % ('%s 00:00:00' % sdate, '%s 23:59:59' % edate) 
     cursor.execute(dbscript_sql)
     dbscripts = cursor.fetchall()
@@ -86,7 +86,7 @@ def _summary_require(sdate, edate):
                  (SELECT a.id AS id, b.name AS name FROM 
                  orders_require a, appconf_appowner b
                  WHERE a.owner_id = b.id AND a.status = 1
-                 AND (a.updatetime >= '%s' AND a.updatetime <= '%s')) c
+                 AND (a.update_time >= '%s' AND a.update_time <= '%s')) c
                  GROUP BY name''' % ('%s 00:00:00' % sdate, '%s 23:59:59' % edate) 
     cursor.execute(require_sql)
     requires = cursor.fetchall()

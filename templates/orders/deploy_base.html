@@ -29,8 +29,6 @@
             toastr.warning("版本号已存在！");
         {% elif status == 3 %}
             toastr.warning("当前应用还有未完成的工单，请完成后再提交！");
-        {% elif status == 4 %}
-            toastr.warning("版本号不允许以Test或Release结尾！");
         {% endif %}
     }
 </script>
