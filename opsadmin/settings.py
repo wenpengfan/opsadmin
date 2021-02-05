@@ -17,7 +17,7 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType, PosixGroupType
 try:
     import ConfigParser as cp
 except ImportError as e:
-    import ConfigParser as cp
+    import configparser as cp
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

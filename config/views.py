@@ -3,7 +3,7 @@
 
 from django.shortcuts import render, HttpResponse
 try:
-    import ConfigParser as cp
+    import configparser as cp
 except Exception as msg:
     print(msg)
     import ConfigParser as cp
