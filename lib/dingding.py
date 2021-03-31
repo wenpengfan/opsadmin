@@ -24,6 +24,7 @@ def dingding_token():
 def dingding_msg(uid, text):
     json_content = {
                     "touser"  : uid,
+                    # 程序AgentId
                     "agentid" : "1090501715",
                     "msgtype" : "text",
                     "text"    : {
