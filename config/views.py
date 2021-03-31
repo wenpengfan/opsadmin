@@ -57,9 +57,6 @@ def index(request):
         cmdb_database = config.get('cmdb', 'cmdb_database')
         dingding_corpid = config.get('dingding', 'dingding_corpid')
         dingding_corpsecret = config.get('dingding', 'dingding_corpsecret')
-        semaphore_domain = config.get('semaphore', 'semaphore_domain')
-        semaphore_username = config.get('semaphore', 'semaphore_username')
-        semaphore_password = config.get('semaphore', 'semaphore_password')
     return render(request, 'config/index.html', locals())
 
 
@@ -106,10 +103,6 @@ def config_save(request):
         # dingding
         dingding_corpid = request.POST.get('dingding_corpid')
         dingding_corpsecret = request.POST.get('dingding_corpsecret')
-        # semaphore
-        semaphore_domain = request.POST.get('semaphore_domain')
-        semaphore_username = request.POST.get('semaphore_username')
-        semaphore_password = request.POST.get('semaphore_password')
         
         config = cp.RawConfigParser()
         dirs = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -151,10 +144,6 @@ def config_save(request):
         config.add_section('dingding')
         config.set('dingding', 'dingding_corpid', dingding_corpid)
         config.set('dingding', 'dingding_corpsecret', dingding_corpsecret)
-        config.add_section('semaphore')
-        config.set('semaphore', 'semaphore_domain', semaphore_domain)
-        config.set('semaphore', 'semaphore_username', semaphore_username)
-        config.set('semaphore', 'semaphore_password', semaphore_password)
         tips = u"保存成功！"
         display_control = ""
         with open(dirs+'/opsadmin.conf', 'wb') as cfgfile:
@@ -191,9 +180,6 @@ def config_save(request):
             cmdb_database = config.get('cmdb', 'cmdb_database')
             dingding_corpid = config.get('dingding', 'dingding_corpid')
             dingding_corpsecret = config.get('dingding', 'dingding_corpsecret')
-            semaphore_domain = config.get('semaphore', 'semaphore_domain')
-            semaphore_username = config.get('semaphore', 'semaphore_username')
-            semaphore_password = config.get('semaphore', 'semaphore_password')
     else:
         display_control = "none"
     return render(request, 'config/index.html', locals())
@@ -225,9 +211,6 @@ def get_dir(args):
         cmdb_database = config.get('cmdb', 'cmdb_database')
         dingding_corpid = config.get('dingding', 'dingding_corpid')
         dingding_corpsecret = config.get('dingding', 'dingding_corpsecret')
-        semaphore_domain = config.get('semaphore', 'semaphore_domain')
-        semaphore_username = config.get('semaphore', 'semaphore_username')
-        semaphore_password = config.get('semaphore', 'semaphore_password')
     # 根据传入参数返回变量以获取配置，返回变量名与参数名相同
     if args:
         return vars()[args]
