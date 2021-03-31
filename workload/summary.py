@@ -1,14 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-from django.shortcuts import render, HttpResponseRedirect
-from django.core.urlresolvers import reverse
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from accounts.permission import permission_verify, permission_deny
+from accounts.permission import permission_verify
 import datetime
-
 
 @login_required
 @permission_verify()
@@ -51,8 +48,8 @@ def summary_list(request):
         'dbscript_data': dbscript_data,
         'require_data': require_data,
     }
-    return render(request, 'workload/summary_list.html', results)
 
+    return render(request, 'workload/summary_list.html', results)
 
 def _summary_deploy(sdate, edate):
     cursor = connection.cursor()
