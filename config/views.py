@@ -60,9 +60,6 @@ def index(request):
         semaphore_domain = config.get('semaphore', 'semaphore_domain')
         semaphore_username = config.get('semaphore', 'semaphore_username')
         semaphore_password = config.get('semaphore', 'semaphore_password')
-        harbor_domain = config.get('harbor', 'harbor_domain')
-        harbor_username = config.get('harbor', 'harbor_username')
-        harbor_password = config.get('harbor', 'harbor_password')
     return render(request, 'config/index.html', locals())
 
 
@@ -113,10 +110,6 @@ def config_save(request):
         semaphore_domain = request.POST.get('semaphore_domain')
         semaphore_username = request.POST.get('semaphore_username')
         semaphore_password = request.POST.get('semaphore_password')
-        # harbor
-        harbor_domain = request.POST.get('harbor_domain')
-        harbor_username = request.POST.get('harbor_username')
-        harbor_password = request.POST.get('harbor_password')
         
         config = cp.RawConfigParser()
         dirs = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -162,10 +155,6 @@ def config_save(request):
         config.set('semaphore', 'semaphore_domain', semaphore_domain)
         config.set('semaphore', 'semaphore_username', semaphore_username)
         config.set('semaphore', 'semaphore_password', semaphore_password)
-        config.add_section('harbor')
-        config.set('harbor', 'harbor_domain', harbor_domain)
-        config.set('harbor', 'harbor_username', harbor_username)
-        config.set('harbor', 'harbor_password', harbor_password)
         tips = u"保存成功！"
         display_control = ""
         with open(dirs+'/opsadmin.conf', 'wb') as cfgfile:
@@ -205,9 +194,6 @@ def config_save(request):
             semaphore_domain = config.get('semaphore', 'semaphore_domain')
             semaphore_username = config.get('semaphore', 'semaphore_username')
             semaphore_password = config.get('semaphore', 'semaphore_password')
-            harbor_domain = config.get('harbor', 'harbor_domain')
-            harbor_username = config.get('harbor', 'harbor_username')
-            harbor_password = config.get('harbor', 'harbor_password')
     else:
         display_control = "none"
     return render(request, 'config/index.html', locals())
@@ -242,9 +228,6 @@ def get_dir(args):
         semaphore_domain = config.get('semaphore', 'semaphore_domain')
         semaphore_username = config.get('semaphore', 'semaphore_username')
         semaphore_password = config.get('semaphore', 'semaphore_password')
-        harbor_domain = config.get('harbor', 'harbor_domain')
-        harbor_username = config.get('harbor', 'harbor_username')
-        harbor_password = config.get('harbor', 'harbor_password')
     # 根据传入参数返回变量以获取配置，返回变量名与参数名相同
     if args:
         return vars()[args]
